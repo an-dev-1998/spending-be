@@ -40,3 +40,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::post('auth/register', [AuthController::class, 'register']);
 Route::post('auth/login', [AuthController::class, 'login']);
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok']);
+});
