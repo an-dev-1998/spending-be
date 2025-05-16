@@ -37,8 +37,11 @@ RUN composer install --no-dev --prefer-dist --no-interaction
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
+# Copy .env.example to .env if .env doesn't exist
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
+
 # Generate application key if not set
-RUN php artisan key:generate --no-interaction
+RUN php artisan key:generate --force --no-interaction || true
 
 # Clear and cache configuration
 RUN php artisan config:clear \
