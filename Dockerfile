@@ -39,5 +39,5 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 # Mở cổng 8000
 EXPOSE 8000
 
-# Chạy ứng dụng Laravel sử dụng built-in server
-CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
+# Chạy ứng dụng Laravel sử dụng artisan serve
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
