@@ -1,49 +1,42 @@
-# 1. Image PHP chính với các extension cần thiết
-FROM php:8.2-fpm
+# Stage 1: Build composer dependencies
+FROM composer:2.6 AS composer
 
-# 2. Cài đặt các package cần thiết
+WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --prefer-dist --no-interaction
+
+# Stage 2: PHP App Server
+FROM php:8.3-fpm
+
+# Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
     git \
     curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
     zip \
     unzip \
     libzip-dev \
-    nodejs \
-    npm
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    && docker-php-ext-install pdo pdo_mysql zip mbstring exif pcntl
 
-# 3. Cài đặt PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+# Install Composer (copied from build stage)
+COPY --from=composer /usr/bin/composer /usr/bin/composer
 
-# 4. Cài đặt Composer (quản lý package PHP)
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Set working directory
+WORKDIR /var/www
 
-# 5. Cài NodeJS & Yarn (dùng để build frontend nếu cần)
-RUN npm install -g yarn
-
-# 6. Thiết lập thư mục làm việc
-WORKDIR /var/www/html
-
-# 7. Copy toàn bộ code vào container
+# Copy project files
 COPY . .
 
-# 8. Chạy composer install
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+# Copy vendor from builder
+COPY --from=composer /app/vendor ./vendor
 
-# 9. Chạy npm install & build frontend (nếu dùng yarn)
-RUN yarn install
-RUN yarn build
+# Laravel permissions
+RUN chown -R www-data:www-data storage bootstrap/cache
 
-# 10. Tạo key Laravel (nếu bạn chưa tạo sẵn)
-# RUN php artisan key:generate
+# Expose port (change if needed)
+EXPOSE 8000
 
-# 11. Cấp quyền cho storage và cache (quan trọng)
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
-# 12. Mở port 9000 (port php-fpm)
-EXPOSE 9000
-
-# 13. Lệnh chạy PHP-FPM server khi container start
-CMD ["php-fpm"]
+# Set entrypoint (you can change serve to use nginx/apache if needed)
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
