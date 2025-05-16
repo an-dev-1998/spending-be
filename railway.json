@@ -3,8 +3,8 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "port": 8000,
+    "startCommand": "php -S 0.0.0.0:8000 -t public",
     "healthcheckPath": "/health",
-    "startCommand": "php -S 0.0.0.0:8000 -t public"
+    "port": 8000
   }
 }

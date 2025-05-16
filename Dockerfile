@@ -1,5 +1,6 @@
 FROM php:8.3-fpm
 
+# Cài các dependency cần thiết
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -20,24 +21,21 @@ RUN apt-get update && apt-get install -y \
     gd \
     pcntl
 
+# Cài Composer
 COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
 
+# Set working directory
 WORKDIR /var/www
 
+# Copy toàn bộ source code
 COPY . .
 
-# ✅ Copy file .env từ .env.example
-RUN cp .env.example .env
-
-# ✅ Cài package
+# Cài đặt composer
 RUN composer install --no-dev --prefer-dist --no-interaction
 
-# ✅ Tạo APP_KEY
-RUN php artisan key:generate
-
-# ✅ Phân quyền
+# Phân quyền
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-# ✅ Serve đúng thư mục public
+# Expose và chạy Laravel bằng built-in server (chạy thư mục public)
 EXPOSE 8000
 CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
