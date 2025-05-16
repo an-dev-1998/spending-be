@@ -1,58 +1,41 @@
-FROM php:8.3-cli
+# Dockerfile
+FROM php:8.3-fpm
 
-# Cài đặt các dependency cần thiết
+# Install dependencies
 RUN apt-get update && apt-get install -y \
+    nginx \
     git \
-    curl \
-    zip \
     unzip \
-    libzip-dev \
-    libxml2-dev \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libonig-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install \
-    pdo \
-    pdo_mysql \
     zip \
-    mbstring \
-    gd \
-    pcntl
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    && docker-php-ext-install pdo pdo_mysql zip mbstring gd
 
-# Cài đặt Composer
+# Install Composer
 COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
 
-# Thiết lập thư mục làm việc
+# Set working directory
 WORKDIR /var/www
 
-# Sao chép mã nguồn vào container
+# Copy app files
 COPY . .
 
-# Cài đặt các package PHP
+# Copy nginx config
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+
+# Copy start script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Set permissions
+RUN chmod -R 775 storage bootstrap/cache
+
+# Install Laravel dependencies
 RUN composer install --no-dev --prefer-dist --no-interaction
 
-# Phân quyền cho thư mục storage và bootstrap/cache
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+EXPOSE 80
 
-# Copy .env.example to .env if .env doesn't exist
-RUN if [ ! -f .env ]; then cp .env.example .env; fi
-
-# Generate application key if not set
-RUN php artisan key:generate --force --no-interaction || true
-
-# Clear and cache configuration
-RUN php artisan config:clear \
-    && php artisan config:cache \
-    && php artisan route:clear \
-    && php artisan route:cache \
-    && php artisan view:clear \
-    && php artisan view:cache
-
-# Mở cổng 8000
-EXPOSE 8000
-
-# Chạy ứng dụng Laravel sử dụng artisan serve
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+CMD ["/start.sh"]
