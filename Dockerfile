@@ -34,7 +34,19 @@ COPY . .
 RUN composer install --no-dev --prefer-dist --no-interaction
 
 # Phân quyền cho thư mục storage và bootstrap/cache
-RUN chown -R www-data:www-data storage bootstrap/cache
+RUN chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+
+# Generate application key if not set
+RUN php artisan key:generate --no-interaction
+
+# Clear and cache configuration
+RUN php artisan config:clear \
+    && php artisan config:cache \
+    && php artisan route:clear \
+    && php artisan route:cache \
+    && php artisan view:clear \
+    && php artisan view:cache
 
 # Mở cổng 8000
 EXPOSE 8000
