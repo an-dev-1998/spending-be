@@ -39,8 +39,9 @@ RUN composer install --no-dev --prefer-dist --no-interaction
 # Clear and cache config after build
 RUN php artisan config:clear && \
     php artisan config:cache && \
-    php artisan route:cache
-
+    php artisan route:cache && \
+    php artisan optimize:clear && \
+    php artisan cache:clear
 EXPOSE 80
 
 CMD ["/start.sh"]
