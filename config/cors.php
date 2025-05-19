@@ -22,6 +22,7 @@ return [
     'allowed_origins' => [
         'https://spending-fe-production.up.railway.app',
         'http://localhost:3000',
+        'http://localhost:5173',
     ],
 
     'allowed_origins_patterns' => [],

@@ -15,12 +15,26 @@ class AnalyticController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function spendingByCategory()
+    public function spendingByCategory(Request $request)
     {
-        $spendings = Spending::select('category_id', DB::raw('SUM(amount) as total_amount'))
-            ->with('category')
-            ->groupBy('category_id')
-            ->get();
+        $query = Spending::select('category_id', DB::raw('SUM(amount) as total_amount'))
+            ->with('category');
+
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $query->whereBetween('date', [$request->start_date, $request->end_date]);
+        }
+
+        $query->groupBy('category_id');
+
+        if (auth()->user()->role === 1) {
+            if ($request->has('user_id')) {
+                $query->where('user_id', $request->user_id);
+            }
+        } else {
+            $query->where('user_id', auth()->id());
+        }
+
+        $spendings = $query->get();
 
         return response()->json([
             'data' => $spendings
@@ -39,14 +53,23 @@ class AnalyticController extends Controller
         $startDate = $request->get('start_date', Carbon::now()->subMonths(6));
         $endDate = $request->get('end_date', Carbon::now());
 
-        $spendings = Spending::select(
+        $query = Spending::select(
             DB::raw('DATE_FORMAT(date, "%Y-%m") as period'),
             DB::raw('SUM(amount) as total_amount')
         )
             ->whereBetween('date', [$startDate, $endDate])
             ->groupBy('period')
-            ->orderBy('period')
-            ->get();
+            ->orderBy('period');
+
+        if (auth()->user()->role === 1) {
+            if ($request->has('user_id')) {
+                $query->where('user_id', $request->user_id);
+            }
+        } else {
+            $query->where('user_id', auth()->id());
+        }
+
+        $spendings = $query->get();
 
         return response()->json([
             'data' => $spendings
@@ -65,13 +88,22 @@ class AnalyticController extends Controller
         $startDate = $request->get('start_date', Carbon::now()->subMonths(1));
         $endDate = $request->get('end_date', Carbon::now());
 
-        $topCategories = Spending::select('category_id', DB::raw('SUM(amount) as total_amount'))
+        $query = Spending::select('category_id', DB::raw('SUM(amount) as total_amount'))
             ->with('category')
             ->whereBetween('date', [$startDate, $endDate])
             ->groupBy('category_id')
             ->orderByDesc('total_amount')
-            ->limit($limit)
-            ->get();
+            ->limit($limit);
+
+        if (auth()->user()->role === 1) {
+            if ($request->has('user_id')) {
+                $query->where('user_id', $request->user_id);
+            }
+        } else {
+            $query->where('user_id', auth()->id());
+        }
+
+        $topCategories = $query->get();
 
         return response()->json([
             'data' => $topCategories
@@ -83,11 +115,25 @@ class AnalyticController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function summary()
+    public function summary(Request $request)
     {
-        $totalSpent = Spending::sum('amount');
-        $averageSpent = Spending::avg('amount');
-        $totalTransactions = Spending::count();
+        $query = Spending::query();
+
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $query->whereBetween('date', [$request->start_date, $request->end_date]);
+        }
+
+        if (auth()->user()->role === 1) {
+            if ($request->has('user_id')) {
+                $query->where('user_id', $request->user_id);
+            }
+        } else {
+            $query->where('user_id', auth()->id());
+        }
+
+        $totalSpent = $query->sum('amount');
+        $averageSpent = $query->avg('amount');
+        $totalTransactions = $query->count();
         $categoriesCount = Category::count();
 
         return response()->json([

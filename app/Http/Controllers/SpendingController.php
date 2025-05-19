@@ -15,7 +15,16 @@ class SpendingController extends Controller
      */
     public function index()
     {
-        $spendings = Spending::with('category')->get();
+        if (auth()->user()->role === 1) {
+            // Admin can view all spendings
+            $spendings = Spending::with('category', 'user')->get();
+        } else {
+            // Regular users can only view their own spendings
+            $spendings = Spending::with('category')
+                ->where('user_id', auth()->id())
+                ->get();
+        }
+        
         return response()->json([
             'data' => $spendings,
         ], 200);
@@ -31,12 +40,13 @@ class SpendingController extends Controller
     {
         $validated = $request->validate([
             'amount' => 'required|numeric',
-            'description' => 'required|string',
+            'description' => 'nullable|string',
             'date' => 'required|date',
             'category_id' => 'required|exists:categories,id',
         ]);
 
         $validated['user_id'] = auth()->id();
+        $validated['description'] = $request->description ?? '-';
         $spending = Spending::create($validated);
         return response()->json($spending->load('category'), 201);
     }
@@ -49,7 +59,9 @@ class SpendingController extends Controller
      */
     public function show($id)
     {
-        $spending = Spending::with('category')->findOrFail($id);
+        $spending = Spending::with('category')
+            ->where('user_id', auth()->id())
+            ->findOrFail($id);
         return response()->json($spending);
     }
 
@@ -62,14 +74,21 @@ class SpendingController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $spending = Spending::findOrFail($id);
+        $spending = Spending::where('user_id', auth()->id())
+            ->findOrFail($id);
         
         $validated = $request->validate([
             'amount' => 'sometimes|required|numeric',
-            'description' => 'sometimes|required|string',
+            'description' => 'nullable|string',
             'date' => 'sometimes|required|date',
             'category_id' => 'sometimes|required|exists:categories,id',
         ]);
+
+        if ($request->has('description')) {
+            $validated['description'] = $request->description;
+        } else {
+            $validated['description'] = '-';
+        }
 
         $spending->update($validated);
         return response()->json($spending->load('category'));
@@ -83,7 +102,8 @@ class SpendingController extends Controller
      */
     public function destroy($id)
     {
-        $spending = Spending::findOrFail($id);
+        $spending = Spending::where('user_id', auth()->id())
+            ->findOrFail($id);
         $spending->delete();
         return response()->json(null, 204);
     }
