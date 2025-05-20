@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Start PHP-FPM in background
-php-fpm -D
+# Run migrations
+php artisan migrate --force
 
-# Start Nginx in foreground
+# Start php-fpm and nginx
+php-fpm &
 nginx -g "daemon off;"
