@@ -34,6 +34,7 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
             'role' => 'required|integer|in:1,2',
+            'image_url' => 'nullable|string',
         ]);
 
         // Only admin can create admin users
@@ -48,6 +49,7 @@ class UserController extends Controller
             'email' => $validated['email'],
             'password' => bcrypt($validated['password']),
             'role' => $validated['role'],
+            'image_url' => $validated['image_url'],
         ]);
 
         return response()->json([
@@ -73,14 +75,21 @@ class UserController extends Controller
             ], 403);
         }
 
-        // Only admin can change roles
-        if (isset($request->role) && auth()->user()->role !== 1) {
-            return response()->json([
-                'message' => 'Unauthorized to change user role'
-            ], 403);
-        }
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'role' => 'required|integer|in:1,2',
+            'image_url' => 'nullable|string',
+        ]);
 
-        $user->update($request->all());
+        // Only admin can change roles
+        // if (isset($request->role) && auth()->user()->role !== 1) {
+        //     return response()->json([
+        //         'message' => 'Unauthorized to change user role'
+        //     ], 403);
+        // }
+
+        $user->update($validated);
         return response()->json([
             'message' => 'User updated successfully',
             'data' => $user
@@ -108,5 +117,33 @@ class UserController extends Controller
         return response()->json([
             'message' => 'User deleted successfully',
         ], 200);
+    }
+
+    public function upload(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+        ]);
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            
+            // Store the file in the public disk
+            $path = $file->storeAs('uploads', $filename, 'public');
+            
+            // Generate the public URL for the file
+            $url = asset('storage/' . $path);
+
+            return response()->json([
+                'message' => 'File uploaded successfully',
+                'url' => $url,
+                'path' => $path
+            ], 200);
+        }
+
+        return response()->json([
+            'message' => 'No file uploaded'
+        ], 400);
     }
 }

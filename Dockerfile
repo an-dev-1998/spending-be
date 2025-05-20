@@ -41,7 +41,8 @@ RUN php artisan config:clear && \
     php artisan config:cache && \
     php artisan route:cache && \
     php artisan optimize:clear && \
-    php artisan cache:clear
+    php artisan cache:clear && \
+    php artisan migrate
 EXPOSE 80
 
 CMD ["/start.sh"]

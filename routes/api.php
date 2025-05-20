@@ -20,18 +20,20 @@ use App\Http\Controllers\AnalyticController;
 */
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', [UserController::class, 'getUser']);
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::post('auth/change-password', [AuthController::class, 'changePassword']);
+
+    Route::get('/user', [UserController::class, 'getUser']);
     Route::get('/users', [UserController::class, 'getUsers']);
     Route::post('/create-user', [UserController::class, 'createUser']);
     Route::post('/update-user', [UserController::class, 'updateUser']);
     Route::delete('/delete-user', [UserController::class, 'deleteUser']);
-    // Spending routes
+    Route::post('/upload', [UserController::class, 'upload']);
+
     Route::apiResource('spendings', SpendingController::class);
-    // Category routes
+
     Route::apiResource('categories', CategoryController::class);
-    // Analytics routes
+    
     Route::get('/analytics/spending-by-category', [AnalyticController::class, 'spendingByCategory']);
     Route::get('/analytics/spending-trends', [AnalyticController::class, 'spendingTrends']);
     Route::get('/analytics/top-categories', [AnalyticController::class, 'topCategories']);
