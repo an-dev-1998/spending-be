@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddImageUrlToUsersTable extends Migration
+class DropImageUrlFromUsersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,7 @@ class AddImageUrlToUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('image_url')->nullable();
+            $table->dropColumn('image_url');
         });
     }
 
@@ -26,7 +26,7 @@ class AddImageUrlToUsersTable extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('image_url');
+            $table->string('image_url')->nullable();
         });
     }
 }
