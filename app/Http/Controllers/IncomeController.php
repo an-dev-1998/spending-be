@@ -12,14 +12,24 @@ class IncomeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+        $query = Income::with('category', 'user');
+
+        // Apply date range filter if provided
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $query->whereBetween('date', [
+                $request->start_date,
+                $request->end_date
+            ]);
+        }
+
         if (auth()->user()->role === 1) {
             // Admin can view all incomes
-            $incomes = Income::with('category', 'user')->get();
+            $incomes = $query->get();
         } else {
             // Regular users can only view their own incomes
-            $incomes = Income::where('user_id', auth()->id())->with('category', 'user')->get();
+            $incomes = $query->where('user_id', auth()->id())->get();
         }
         
         return response()->json([

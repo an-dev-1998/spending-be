@@ -13,17 +13,24 @@ class SpendingController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        if (auth()->user()->role === 1) {
-            // Admin can view all spendings
-            $spendings = Spending::with('category', 'user')->get();
-        } else {
-            // Regular users can only view their own spendings
-            $spendings = Spending::with('category')
-                ->where('user_id', auth()->id())
-                ->get();
+        $query = Spending::with('category');
+        
+        // Add user filter based on role
+        if (auth()->user()->role !== 1) {
+            $query->where('user_id', auth()->id());
         }
+
+        // Apply date range filter if provided
+        if ($request->has('start_date')) {
+            $query->where('date', '>=', $request->start_date);
+        }
+        if ($request->has('end_date')) {
+            $query->where('date', '<=', $request->end_date);
+        }
+
+        $spendings = $query->get();
         
         return response()->json([
             'data' => $spendings,
