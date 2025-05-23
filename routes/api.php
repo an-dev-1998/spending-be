@@ -8,6 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\SpendingController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AnalyticController;
+use App\Http\Controllers\IncomeController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -34,10 +35,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('categories', CategoryController::class);
     
-    Route::get('/analytics/spending-by-category', [AnalyticController::class, 'spendingByCategory']);
-    Route::get('/analytics/spending-trends', [AnalyticController::class, 'spendingTrends']);
-    Route::get('/analytics/top-categories', [AnalyticController::class, 'topCategories']);
-    Route::get('/analytics/summary', [AnalyticController::class, 'summary']);
+    Route::get('/analytics/spending', [AnalyticController::class, 'spendingAnalytics']);
+    Route::get('/analytics/income', [AnalyticController::class, 'incomeAnalytics']);
+    Route::get('/analytics/total', [AnalyticController::class, 'totalAnalytics']);
+
+    Route::apiResource('incomes', IncomeController::class);
 });
 
 Route::post('auth/register', [AuthController::class, 'register']);
