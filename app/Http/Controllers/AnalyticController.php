@@ -84,13 +84,13 @@ class AnalyticController extends Controller
 
         $totalSpending = $spending->sum('amount'); 
         $totalIncome = $income->sum('amount');
-        $total = $totalIncome - $totalSpending;
+        $total = ($totalIncome - $totalSpending);
 
         return response()->json([
             'data' => [
-                'totalSpending' => $totalSpending,
-                'totalIncome' => $totalIncome,
-                'totalBalance' => $total
+                'totalSpending' => number_format($totalSpending, 0),
+                'totalIncome' => number_format($totalIncome, 0),
+                'totalBalance' => number_format($total, 0)
             ]
         ]);
     }
