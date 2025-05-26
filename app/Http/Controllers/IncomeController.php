@@ -26,10 +26,10 @@ class IncomeController extends Controller
 
         if (auth()->user()->role === 1) {
             // Admin can view all incomes
-            $incomes = $query->get();
+            $incomes = $query->orderBy('date', 'desc')->get();
         } else {
             // Regular users can only view their own incomes
-            $incomes = $query->where('user_id', auth()->id())->get();
+            $incomes = $query->where('user_id', auth()->id())->orderBy('date', 'desc')->get();
         }
         
         return response()->json([

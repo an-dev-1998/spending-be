@@ -30,7 +30,7 @@ class SpendingController extends Controller
             $query->where('date', '<=', $request->end_date);
         }
 
-        $spendings = $query->get();
+        $spendings = $query->orderBy('date', 'desc')->get();
         
         return response()->json([
             'data' => $spendings,

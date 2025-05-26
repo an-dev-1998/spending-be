@@ -14,7 +14,7 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::withCount('spendings')->get();
+        $categories = Category::withCount('spendings')->orderBy('created_at', 'desc')->get();
         return response()->json([
             'data' => $categories,
         ], 200);
