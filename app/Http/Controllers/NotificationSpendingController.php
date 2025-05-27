@@ -19,12 +19,10 @@ class NotificationSpendingController extends Controller
         $query = NotificationSpending::with(['user', 'spending'])
             ->where('user_id', auth()->id());
 
-        // Filter by read status if provided
         if ($request->has('is_read')) {
             $query->where('is_read', $request->boolean('is_read'));
         }
 
-        // Filter by type if provided
         if ($request->has('type')) {
             $query->where('type', $request->type);
         }

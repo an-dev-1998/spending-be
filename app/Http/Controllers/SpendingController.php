@@ -62,8 +62,7 @@ class SpendingController extends Controller
 
         $spending = Spending::create($validated);
 
-        if ($remainingAmount['remaining_amount'] < $request->amount) {
-            // Create notification for the new spending
+        if ($remainingAmount['daily_limit'] < $request->amount) {
             NotificationSpending::create([
                 'user_id' => auth()->id(),
                 'spending_id' => $spending->id,

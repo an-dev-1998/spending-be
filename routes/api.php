@@ -42,7 +42,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('incomes', IncomeController::class);
 
-    // Notification Spending Routes
     Route::get('/notifications', [NotificationSpendingController::class, 'index']);
     Route::get('/notifications/unread-count', [NotificationSpendingController::class, 'unreadCount']);
     Route::post('/notifications/{id}/mark-as-read', [NotificationSpendingController::class, 'markAsRead']);

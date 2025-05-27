@@ -14,7 +14,6 @@ class UserController extends Controller
 
     public function getUsers()
     {
-        // Only admin can get all users
         if (auth()->user()->role !== 1) {
             return response()->json([
                 'message' => 'Unauthorized access'
@@ -37,7 +36,6 @@ class UserController extends Controller
             'image_url' => 'nullable|string',
         ]);
 
-        // Only admin can create admin users
         if ($validated['role'] === 1 && auth()->user()->role !== 1) {
             return response()->json([
                 'message' => 'Unauthorized to create admin user'
@@ -68,7 +66,6 @@ class UserController extends Controller
             ], 404);
         }
 
-        // Only admin can update other users
         if (auth()->user()->role !== 1 && auth()->user()->id !== $user->id) {
             return response()->json([
                 'message' => 'Unauthorized to update this user'
@@ -81,13 +78,6 @@ class UserController extends Controller
             'role' => 'required|integer|in:1,2',
             'image_url' => 'nullable|string',
         ]);
-
-        // Only admin can change roles
-        // if (isset($request->role) && auth()->user()->role !== 1) {
-        //     return response()->json([
-        //         'message' => 'Unauthorized to change user role'
-        //     ], 403);
-        // }
 
         $user->update($validated);
         return response()->json([
@@ -106,7 +96,6 @@ class UserController extends Controller
             ], 404);
         }
 
-        // Only admin can delete users
         if (auth()->user()->role !== 1) {
             return response()->json([
                 'message' => 'Unauthorized to delete users'
@@ -122,17 +111,15 @@ class UserController extends Controller
     public function upload(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'file' => 'required|file|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
             $filename = time() . '_' . $file->getClientOriginalName();
             
-            // Store the file in the public disk
             $path = $file->storeAs('uploads', $filename, 'public');
             
-            // Generate the public URL for the file
             $url = asset('storage/' . $path);
 
             return response()->json([

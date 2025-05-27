@@ -16,7 +16,6 @@ class IncomeController extends Controller
     {
         $query = Income::with('category', 'user');
 
-        // Apply date range filter if provided
         if ($request->has('start_date') && $request->has('end_date')) {
             $query->whereBetween('date', [
                 $request->start_date,
@@ -25,10 +24,8 @@ class IncomeController extends Controller
         }
 
         if (auth()->user()->role === 1) {
-            // Admin can view all incomes
             $incomes = $query->orderBy('date', 'desc')->get();
         } else {
-            // Regular users can only view their own incomes
             $incomes = $query->where('user_id', auth()->id())->orderBy('date', 'desc')->get();
         }
         

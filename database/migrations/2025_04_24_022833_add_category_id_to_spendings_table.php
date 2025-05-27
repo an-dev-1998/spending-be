@@ -18,7 +18,6 @@ class AddCategoryIdToSpendingsTable extends Migration
             $table->foreignId('category_id')->nullable()->constrained()->onDelete('set null');
         });
 
-        // Create default categories from existing spen_name values
         $existingCategories = DB::table('spendings')
             ->select('spen_name')
             ->distinct()
@@ -34,7 +33,6 @@ class AddCategoryIdToSpendingsTable extends Migration
             ]);
         }
 
-        // Update spendings with corresponding category_id
         foreach ($existingCategories as $categoryName) {
             $category = DB::table('categories')->where('name', $categoryName)->first();
             DB::table('spendings')
@@ -58,7 +56,6 @@ class AddCategoryIdToSpendingsTable extends Migration
             $table->string('spen_name')->nullable();
         });
 
-        // Restore spen_name values from categories
         $spendings = DB::table('spendings')
             ->select('id', 'category_id')
             ->get();

@@ -18,7 +18,6 @@ class UpdateCategoryToSpenNameInSpendingsTable extends Migration
             $table->string('spen_name');
         });
 
-        // Copy data from category to spen_name
         DB::table('spendings')->update([
             'spen_name' => DB::raw('category')
         ]);
@@ -39,7 +38,6 @@ class UpdateCategoryToSpenNameInSpendingsTable extends Migration
             $table->string('category');
         });
 
-        // Copy data back from spen_name to category
         DB::table('spendings')->update([
             'category' => DB::raw('spen_name')
         ]);
