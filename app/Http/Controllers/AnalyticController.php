@@ -82,15 +82,22 @@ class AnalyticController extends Controller
             $income->whereBetween('date', [$request->start_date, $request->end_date]);
         }
 
+        $now = Carbon::now();
+        $nextMonth = $now->copy()->addMonth();
+        $targetDate = $nextMonth->startOfMonth()->addDays(9);
+        $remainDate = $targetDate->diffInDays($now);
+
         $totalSpending = $spending->sum('amount'); 
         $totalIncome = $income->sum('amount');
         $total = ($totalIncome - $totalSpending);
+        $totalPerDay = $total / $remainDate;
 
         return response()->json([
             'data' => [
                 'totalSpending' => number_format($totalSpending, 0),
                 'totalIncome' => number_format($totalIncome, 0),
-                'totalBalance' => number_format($total, 0)
+                'totalBalance' => number_format($total, 0),
+                'totalPerDay' => number_format($totalPerDay, 0)
             ]
         ]);
     }
