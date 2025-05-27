@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Spending;
+use App\Models\Income;
 use App\Models\Category;
+use App\Models\NotificationSpending;
+use Carbon\Carbon;
 
 class SpendingController extends Controller
 {
@@ -54,7 +57,24 @@ class SpendingController extends Controller
 
         $validated['user_id'] = auth()->id();
         $validated['description'] = $request->description ?? '-';
+
+        $remainingAmount = $this->calculateRemainingAmount()->getData(true);
+
+        $exceedLimit = $request->amount - $remainingAmount['daily_limit'];
+
         $spending = Spending::create($validated);
+
+        if ($remainingAmount['remaining_amount'] < $request->amount) {
+            // Create notification for the new spending
+            NotificationSpending::create([
+                'user_id' => auth()->id(),
+                'spending_id' => $spending->id,
+                'type' => 'new_spending',
+                'message' => "Daily limit is {$remainingAmount['daily_limit']}, You have exceeded your daily limit by {$exceedLimit}",
+                'is_read' => false,
+            ]);
+        }
+
         return response()->json($spending->load('category'), 201);
     }
 
@@ -113,5 +133,35 @@ class SpendingController extends Controller
             ->findOrFail($id);
         $spending->delete();
         return response()->json(null, 204);
+    }
+
+    /**
+     * Calculate the remaining amount until the 10th of next month.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function calculateRemainingAmount()
+    {
+        $now = Carbon::now();
+        $nextMonth = $now->copy()->addMonth();
+        $targetDate = $nextMonth->startOfMonth()->addDays(9);
+        $remainDate = $targetDate->diffInDays($now);
+
+        $spending = Spending::select('amount');
+        $income = Income::select('amount');
+
+        $totalSpent = $spending->sum('amount');
+        $totalIncome = $income->sum('amount');
+        $total = ($totalIncome - $totalSpent);
+
+        $totalPerDay = $total / $remainDate;
+
+        return response()->json([
+            'remaining_amount' => $total,
+            'target_date' => $targetDate->format('Y-m-d'),
+            'current_date' => $now->format('Y-m-d'),
+            'remaining_days' => $remainDate,
+            'daily_limit' => round($totalPerDay, 2)
+        ]);
     }
 } 

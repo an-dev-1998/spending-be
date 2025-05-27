@@ -9,6 +9,7 @@ use App\Http\Controllers\SpendingController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AnalyticController;
 use App\Http\Controllers\IncomeController;
+use App\Http\Controllers\NotificationSpendingController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -40,6 +41,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/analytics/total', [AnalyticController::class, 'totalAnalytics']);
 
     Route::apiResource('incomes', IncomeController::class);
+
+    // Notification Spending Routes
+    Route::get('/notifications', [NotificationSpendingController::class, 'index']);
+    Route::get('/notifications/unread-count', [NotificationSpendingController::class, 'unreadCount']);
+    Route::post('/notifications/{id}/mark-as-read', [NotificationSpendingController::class, 'markAsRead']);
+    Route::post('/notifications/mark-all-as-read', [NotificationSpendingController::class, 'markAllAsRead']);
+    Route::delete('/notifications/{id}', [NotificationSpendingController::class, 'destroy']);
 });
 
 Route::post('auth/register', [AuthController::class, 'register']);
