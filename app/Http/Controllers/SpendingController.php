@@ -20,12 +20,10 @@ class SpendingController extends Controller
     {
         $query = Spending::with('category');
         
-        // Add user filter based on role
         if (auth()->user()->role !== 1) {
             $query->where('user_id', auth()->id());
         }
 
-        // Apply date range filter if provided
         if ($request->has('start_date')) {
             $query->where('date', '>=', $request->start_date);
         }
