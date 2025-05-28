@@ -30,6 +30,9 @@ class SpendingController extends Controller
         if ($request->has('end_date')) {
             $query->where('date', '<=', $request->end_date);
         }
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
 
         $spendings = $query->orderBy('date', 'desc')->get();
         
