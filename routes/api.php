@@ -39,6 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/analytics/spending', [AnalyticController::class, 'spendingAnalytics']);
     Route::get('/analytics/income', [AnalyticController::class, 'incomeAnalytics']);
     Route::get('/analytics/total', [AnalyticController::class, 'totalAnalytics']);
+    Route::get('/analytics/spending-by-date', [AnalyticController::class, 'spendingByDate']);
 
     Route::apiResource('incomes', IncomeController::class);
 

@@ -101,5 +101,51 @@ class AnalyticController extends Controller
             ]
         ]);
     }
+
+    public function spendingByDate(Request $request)
+    {
+        if ($request->has('date')) {
+            $today = Carbon::parse($request->date);
+        } else {
+            $today = Carbon::today();
+        }
+        $yesterday = $today->copy()->subDay();
+
+        $todaySpending = Spending::select(DB::raw('SUM(amount) as total_amount'))
+            ->whereDate('date', $today)
+            ->when(auth()->user()->role !== 1, function ($query) {
+                return $query->where('user_id', auth()->id());
+            })
+            ->first();
+
+        $yesterdaySpending = Spending::select(DB::raw('SUM(amount) as total_amount'))
+            ->whereDate('date', $yesterday)
+            ->when(auth()->user()->role !== 1, function ($query) {
+                return $query->where('user_id', auth()->id());
+            })
+            ->first();
+
+        $todayAmount = $todaySpending ? $todaySpending->total_amount : 0;
+        $yesterdayAmount = $yesterdaySpending ? $yesterdaySpending->total_amount : 0;
+        $difference = $todayAmount - $yesterdayAmount;
+        $percentageChange = $yesterdayAmount != 0 ? (($difference / $yesterdayAmount) * 100) : 0;
+
+        return response()->json([
+            'data' => [
+                'today' => [
+                    'date' => $today->format('Y-m-d'),
+                    'amount' => number_format($todayAmount, 0)
+                ],
+                'yesterday' => [
+                    'date' => $yesterday->format('Y-m-d'),
+                    'amount' => number_format($yesterdayAmount, 0)
+                ],
+                'difference' => [
+                    'amount' => number_format($difference, 0),
+                    'percentage' => number_format($percentageChange, 2)
+                ]
+            ]
+        ]);
+    }
 } 
 
