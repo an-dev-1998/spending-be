@@ -6,8 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Spending;
 use App\Models\Income;
 use App\Models\Category;
-use App\Models\NotificationSpending;
+use App\Events\SpendingNotification;
 use Carbon\Carbon;
+use App\Models\NotificationSpending;
 
 class SpendingController extends Controller
 {

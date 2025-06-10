@@ -84,13 +84,13 @@ class AnalyticController extends Controller
 
         $now = Carbon::now();
         $nextMonth = $now->copy()->addMonth();
-        $targetDate = $nextMonth->startOfMonth()->addDays(9);
+        $targetDate = $now->copy()->startOfMonth()->addDays(9);
         $remainDate = $targetDate->diffInDays($now);
 
         $totalSpending = $spending->sum('amount'); 
         $totalIncome = $income->sum('amount');
         $total = ($totalIncome - $totalSpending);
-        $totalPerDay = $total / $remainDate;
+        $totalPerDay = $remainDate > 0 ? $total / $remainDate : 0;
 
         return response()->json([
             'data' => [

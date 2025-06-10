@@ -9,6 +9,7 @@ use App\Http\Controllers\SpendingController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AnalyticController;
 use App\Http\Controllers\IncomeController;
+use App\Http\Controllers\ExpectController;
 use App\Http\Controllers\NotificationSpendingController;
 /*
 |--------------------------------------------------------------------------
@@ -48,6 +49,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notifications/{id}/mark-as-read', [NotificationSpendingController::class, 'markAsRead']);
     Route::post('/notifications/mark-all-as-read', [NotificationSpendingController::class, 'markAllAsRead']);
     Route::delete('/notifications/{id}', [NotificationSpendingController::class, 'destroy']);
+
+    Route::get('/expect/amount-total', [ExpectController::class, 'actionExpect']);
+    Route::post('/expect/spending', [ExpectController::class, 'actionSpending']);
+    Route::get('/expect/spending', [ExpectController::class, 'getActionSpending']);
 });
 
 Route::post('auth/register', [AuthController::class, 'register']);
